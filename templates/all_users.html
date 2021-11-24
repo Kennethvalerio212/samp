@@ -4,16 +4,16 @@
     <thead>
       <tr>
         <th scope="col">#</th>
-        <th scope="col">username</th>
-        <th scope="col">userpass</th>
+        <th scope="col">Heart Date</th>
+        <th scope="col">Heart Rate</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        {% for i in all_users %}
-        <th scope="row">{{ i.user_id }}</th>
-        <td> {{ i.user_name}}</td>
-        <td>{{ i.user_pass }}</td>
+        {% for i in result %}
+        <th scope="row">{{ i.heart_id }}</th>
+        <td> {{ i.heart_date}}</td>
+        <td>{{ i.heart_rate }}</td>
 
       </tr>
       {% endfor %}

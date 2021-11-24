@@ -10,23 +10,24 @@ sample.config['SQLALCHEMY_TRACK_MODIFICATIONS']=True
 db= SQLAlchemy(sample)
 ma= Marshmallow(sample)
 
-class user(db.Model):
-    __tablename__="user"
-    user_id=db.Column(db.Integer,primary_key=True)
-    user_name=db.Column(db.String(50))
-    user_pass=db.Column(db.String(50))
+class Heart(db.Model):
+    __tablename__="heart"
+    heart_id=db.Column(db.Integer,primary_key=True)
+    heart_date=db.Column(db.String(50))
+    heart_rate=db.Column(db.String(50))
 
-    def __init__(self,user_name,user_pass):
-        self.user_name=user_name
-        self.user_pass=user_pass
+    def __init__(self,heart_id,heart_date,heart_rate):
+        self.heart_id=heart_id
+        self.heart_date=heart_date
+        self.heart_rate =heart_rate
     
 
-class UserSchema(ma.Schema):
+class HeartSchema(ma.Schema):
     class Meta:
-        fields = ["user_name,user_pass"]
+        fields=["heart_id","heart_date","heart_rate"]
 
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
+heart_schema=HeartSchema()
+hearts_schema=HeartSchema(many=True)
 
 
 
@@ -36,32 +37,60 @@ def main():
 
 @sample.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        user_name_input = request.form['username']
-        user_pass_input = request.form['userpass']
- 
-
     return render_template("login.html")
 
 @sample.route("/reg", methods = ['GET','POST'])
 def reg ():
     return render_template("register.html")
 
-@sample.route("/registers", methods = ['GET','POST'])
+@sample.route("/registers", methods = ['POST'])
 def reg_user():
     if request.method == 'POST':
-        username = request.form['username']
-        userpass = request.form['userpass']
-        new_user = user(user_name = username, user_pass=userpass)
-        db.session.add(new_user)
+        heart_id = request.form['heart_id']
+        heart_rate = request.form['heart_rate']
+        heart_date= request.form['heart_date']
+        new_heart = Heart(heart_id = heart_id,heart_date =heart_date, heart_rate=heart_rate)
+        db.session.add(new_heart)
         db.session.commit()
-        return redirect('/')
+        return heart_schema.jsonify(new_heart)
    
-@sample.route("/alluser")
+@sample.route("/allhearts")
 def users():
-    all_users = user.query.all()
-    return render_template('all_users.html',all_users=all_users)
+    result = Heart.query.all()
+    #return hearts_schema.jsonify(result).data
+    return render_template("all_users.html",result=result)
 
+@sample.route('/hearts/<heart_id>',methods=['GET'])
+def read_heart(heart_id):
+    heart=Heart.query.get(heart_id)
+    result= heart_schema.dump(heart)
+    return heart_schema.jsonify(result)
+
+@sample.route("/update", methods=['GET', 'POST'])
+def update():
+    return render_template("update.html")
+
+@sample.route('/hearts/<heart_id>',methods=['PUT'])
+
+def update_heart(heart_id):
+    heart=Heart.query.get(heart_id)
+
+    heart_rate=request.json.get('heart_rate')
+    heart_date=request.json.get('heart_date')
+
+    heart.heart_date= heart_date
+    heart.heart_rate=heart_rate
+    db.session.commit()
+
+    return heart_schema.jsonify(heart)
+
+@sample.route('/hearts/<heart_id>',methods=['DELETE'])
+def delete_heart(heart_id):
+    heart=Heart.query.get(heart_id)
+    db.session.delete(heart)
+    db.session.commit()
+    
+    return heart_schema.jsonify(heart)
 
 
 if __name__ == "__main__":
